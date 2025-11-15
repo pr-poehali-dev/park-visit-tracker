@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 
 interface Lecture {
@@ -24,6 +25,11 @@ interface Subject {
 }
 
 const Index = () => {
+  const [selectedGroup, setSelectedGroup] = useState<string>('1 ТС-1');
+  const [availableGroups, setAvailableGroups] = useState<string[]>([]);
+  const [scheduleData, setScheduleData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [lectures, setLectures] = useState<Lecture[]>([
     {
       id: 1,
@@ -115,6 +121,19 @@ const Index = () => {
     }
   ];
 
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      setIsLoading(true);
+      const response = await fetch('https://functions.poehali.dev/ac1d7467-912b-476b-854b-2d20cbde054f');
+      const data = await response.json();
+      setScheduleData(data);
+      setAvailableGroups(data.groups || []);
+      setIsLoading(false);
+    };
+    
+    fetchSchedule();
+  }, []);
+
   const toggleAttendance = (id: number) => {
     setLectures(
       lectures.map((lecture) =>
@@ -132,11 +151,29 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
-        <header className="text-center space-y-2 mb-8">
+        <header className="text-center space-y-4 mb-8">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
             Посещаемость Пар
           </h1>
           <p className="text-muted-foreground text-lg">Отслеживай учёбу легко и стильно</p>
+          
+          {availableGroups.length > 0 && (
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <Icon name="Users" size={20} className="text-primary" />
+              <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                <SelectTrigger className="w-64 bg-white/80 backdrop-blur-sm border-2">
+                  <SelectValue placeholder="Выберите группу" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableGroups.map((group) => (
+                    <SelectItem key={group} value={group}>
+                      {group}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

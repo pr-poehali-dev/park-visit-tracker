@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "Get schedule successfully",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "none"
+    }
+  ]
+}
